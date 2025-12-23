@@ -7,7 +7,7 @@
 <h4 align="center">A blazingly fast TUI for managing SSH connections with real-time server health monitoring.</h4>
 
 <p align="center">
-  <a href="https://github.com/jiwan/ggoto/blob/main/LICENSE">
+  <a href="https://github.com/JiwanChung/ggoto/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License">
   </a>
   <img src="https://img.shields.io/badge/rust-1.70%2B-orange.svg?style=flat-square" alt="Rust Version">
@@ -46,13 +46,13 @@
 ### Using Cargo (Recommended)
 
 ```bash
-cargo install --git https://github.com/jiwan/ggoto.git
+cargo install --git https://github.com/JiwanChung/ggoto.git
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/jiwan/ggoto.git
+git clone https://github.com/JiwanChung/ggoto.git
 cd ggoto
 cargo build --release
 
@@ -61,7 +61,7 @@ cargo build --release
 
 ### From Releases
 
-Download the latest binary from the [Releases](https://github.com/jiwan/ggoto/releases) page.
+Download the latest binary from the [Releases](https://github.com/JiwanChung/ggoto/releases) page.
 
 ### Requirements
 
