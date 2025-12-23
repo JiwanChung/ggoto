@@ -207,7 +207,24 @@ async fn main() -> Result<()> {
                             }
                         }
                         HandleResult::ToggleFavorite => {
+                            // Remember the selected server before toggling
+                            let selected_host = app.selected_server().map(|s| s.host.clone());
+
                             app.toggle_selected_favorite();
+
+                            // Re-sort if using Favorites sort order
+                            if app.sort_order == SortOrder::Favorites {
+                                app.sort_servers();
+
+                                // Restore selection to the same server
+                                if let Some(host) = selected_host {
+                                    let display_order = app.display_order_servers();
+                                    if let Some(pos) = display_order.iter().position(|&idx| app.servers[idx].host == host) {
+                                        app.selected_index = pos;
+                                    }
+                                }
+                            }
+
                             // Update history reference and save
                             history = app.history.clone();
                             if let Err(e) = history.save() {

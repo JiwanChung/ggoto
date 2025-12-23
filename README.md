@@ -39,7 +39,8 @@
 - **Favorites & History** — Mark favorite servers with ★ and track connection history
 - **Multiple Sort Options** — Sort by name, latency, CPU, RAM, favorites, or recent usage
 - **Clipboard & Pipe Support** — Copy command output or pipe to local commands
-- **Fully Async** — Built on Tokio for non-blocking operations
+- **GPU Monitoring** — NVIDIA and AMD GPU utilization and memory stats
+- **Fully Async** — Built on Tokio for non-blocking operations with rate-limited health checks
 
 ## 📦 Installation
 
@@ -228,14 +229,15 @@ Servers are automatically grouped by naming patterns:
 
 ## 📈 Health Metrics
 
-ggoto collects real-time metrics from each server:
+ggoto collects real-time metrics from each server (max 5 concurrent checks):
 
 | Metric | Source |
 |--------|--------|
 | Latency | SSH connection time |
-| CPU Usage | `/proc/stat` |
-| RAM Usage | `/proc/meminfo` |
-| Load Average | `/proc/loadavg` |
+| CPU Usage | `top` / `vm_stat` |
+| RAM Usage | `free` / `vm_stat` |
+| Load Average | `uptime` |
+| GPU Usage | `nvidia-smi` / `rocm-smi` |
 | Logged-in Users | `who` command |
 
 ### Latency Color Coding
@@ -290,7 +292,7 @@ cargo build --release
 
 ## 🗺️ Roadmap
 
-- [ ] GPU monitoring (NVIDIA/AMD)
+- [x] GPU monitoring (NVIDIA/AMD)
 - [ ] Custom health check commands
 - [ ] Server tags and custom grouping
 - [ ] Connection multiplexing

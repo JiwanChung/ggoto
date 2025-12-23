@@ -1,10 +1,14 @@
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use anyhow::Result;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, Semaphore};
 
 use crate::server::{GpuInfo, HealthStatus, Server, SystemMetrics};
 use crate::ssh::connection::run_remote_command;
+
+/// Maximum concurrent health check connections
+const MAX_CONCURRENT_CHECKS: usize = 5;
 
 /// Message sent from health check tasks
 #[derive(Debug)]
@@ -132,13 +136,30 @@ fn parse_metrics_output(output: &str) -> Result<SystemMetrics> {
 /// Latency threshold in milliseconds (>100ms = degraded)
 const LATENCY_GOOD_MS: u64 = 100;
 
-/// Spawn a health check task for a server
+/// Spawn a health check task for a single server (no concurrency limit)
 pub fn spawn_health_check(
     server_idx: usize,
     server: Server,
     tx: mpsc::UnboundedSender<HealthUpdate>,
 ) {
+    spawn_health_check_with_semaphore(server_idx, server, tx, None);
+}
+
+/// Spawn a health check task with optional semaphore for concurrency limiting
+fn spawn_health_check_with_semaphore(
+    server_idx: usize,
+    server: Server,
+    tx: mpsc::UnboundedSender<HealthUpdate>,
+    semaphore: Option<Arc<Semaphore>>,
+) {
     tokio::spawn(async move {
+        // Acquire semaphore permit if provided (limits concurrent SSH connections)
+        let _permit = if let Some(ref sem) = semaphore {
+            Some(sem.acquire().await)
+        } else {
+            None
+        };
+
         // Check latency first
         let latency = check_latency(&server).await;
         let status = match latency {
@@ -166,13 +187,18 @@ pub fn spawn_health_check(
             status,
             metrics,
         });
+
+        // Permit is dropped here, allowing another task to proceed
     });
 }
 
-/// Spawn health checks for all servers
+/// Spawn health checks for all servers with concurrency limiting
 pub fn spawn_all_health_checks(servers: &[Server], tx: mpsc::UnboundedSender<HealthUpdate>) {
+    // Use a semaphore to limit concurrent SSH connections
+    let semaphore = Arc::new(Semaphore::new(MAX_CONCURRENT_CHECKS));
+
     for (idx, server) in servers.iter().enumerate() {
-        spawn_health_check(idx, server.clone(), tx.clone());
+        spawn_health_check_with_semaphore(idx, server.clone(), tx.clone(), Some(semaphore.clone()));
     }
 }
 

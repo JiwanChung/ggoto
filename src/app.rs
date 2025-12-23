@@ -224,6 +224,23 @@ impl App {
         self.tunnel_input.pop();
     }
 
+    /// Get servers in display order (grouped by group name, then by filtered order within each group)
+    /// This matches the order shown in the UI
+    pub fn display_order_servers(&self) -> Vec<usize> {
+        use std::collections::BTreeMap;
+        let filtered = self.filtered_servers();
+        let mut grouped: BTreeMap<String, Vec<usize>> = BTreeMap::new();
+        for &idx in &filtered {
+            let group = self.servers[idx].group.clone().unwrap_or_default();
+            grouped.entry(group).or_default().push(idx);
+        }
+        let mut result = Vec::new();
+        for (_, server_indices) in grouped {
+            result.extend(server_indices);
+        }
+        result
+    }
+
     /// Get filtered servers based on current filter text
     /// Supports regex patterns - uses simple substring match for plain text
     pub fn filtered_servers(&self) -> Vec<usize> {
@@ -267,17 +284,17 @@ impl App {
         }
     }
 
-    /// Get the currently selected server
+    /// Get the currently selected server (based on display order)
     pub fn selected_server(&self) -> Option<&Server> {
-        let filtered = self.filtered_servers();
-        filtered.get(self.selected_index).map(|&i| &self.servers[i])
+        let display_order = self.display_order_servers();
+        display_order.get(self.selected_index).map(|&i| &self.servers[i])
     }
 
-    /// Get mutable reference to selected server
+    /// Get mutable reference to selected server (based on display order)
     #[allow(dead_code)]
     pub fn selected_server_mut(&mut self) -> Option<&mut Server> {
-        let filtered = self.filtered_servers();
-        if let Some(&idx) = filtered.get(self.selected_index) {
+        let display_order = self.display_order_servers();
+        if let Some(&idx) = display_order.get(self.selected_index) {
             Some(&mut self.servers[idx])
         } else {
             None
@@ -287,7 +304,7 @@ impl App {
     /// Move selection up
     pub fn select_previous(&mut self) {
         let count = match self.view_mode {
-            ViewMode::ServerList => self.filtered_servers().len(),
+            ViewMode::ServerList => self.display_order_servers().len(),
             ViewMode::GroupList => self.groups.len(),
             _ => 0,
         };
@@ -307,7 +324,7 @@ impl App {
     /// Move selection down
     pub fn select_next(&mut self) {
         let count = match self.view_mode {
-            ViewMode::ServerList => self.filtered_servers().len(),
+            ViewMode::ServerList => self.display_order_servers().len(),
             ViewMode::GroupList => self.groups.len(),
             _ => 0,
         };
@@ -460,8 +477,8 @@ impl App {
 
     /// Toggle favorite for the currently selected server
     pub fn toggle_selected_favorite(&mut self) {
-        let filtered = self.filtered_servers();
-        if let Some(&idx) = filtered.get(self.selected_index) {
+        let display_order = self.display_order_servers();
+        if let Some(&idx) = display_order.get(self.selected_index) {
             let host = self.servers[idx].host.clone();
             self.history.toggle_favorite(&host);
         }

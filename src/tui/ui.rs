@@ -135,6 +135,10 @@ fn draw_server_list(frame: &mut Frame, app: &App, area: Rect) {
     use std::collections::BTreeMap;
 
     let filtered = app.filtered_servers();
+    let display_order = app.display_order_servers();
+
+    // Get the actual server index that is currently selected (using display order)
+    let selected_server_idx = display_order.get(app.selected_index).copied();
 
     // Group servers by their group name
     let mut grouped: BTreeMap<String, Vec<usize>> = BTreeMap::new();
@@ -145,7 +149,7 @@ fn draw_server_list(frame: &mut Frame, app: &App, area: Rect) {
 
     // Build list items with column header, group headers and server rows
     let mut items: Vec<ListItem> = Vec::new();
-    let mut flat_index = 0; // Track position for selection
+    let mut flat_index = 0; // Track position for shortcut keys
 
     // Column header - use same widths as data rows
     let hdr = Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD);
@@ -174,7 +178,7 @@ fn draw_server_list(frame: &mut Frame, app: &App, area: Rect) {
         // Servers in this group
         for &idx in server_indices {
             let server = &app.servers[idx];
-            let is_selected = flat_index == app.selected_index;
+            let is_selected = Some(idx) == selected_server_idx;
 
             // Color code latency: green <100ms, yellow 100-500ms, red >500ms
             let (latency_str, latency_color) = match server.latency_ms() {

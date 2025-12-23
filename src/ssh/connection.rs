@@ -45,6 +45,9 @@ pub fn launch_ssh_session(server: &Server) -> Result<()> {
     Ok(())
 }
 
+/// SSH connection timeout in seconds (for health checks)
+const CONNECT_TIMEOUT_SECS: u64 = 3;
+
 /// Command execution timeout in seconds
 const COMMAND_TIMEOUT_SECS: u64 = 10;
 
@@ -55,7 +58,7 @@ pub async fn run_remote_command(server: &Server, command: &str) -> Result<String
         "-o".to_string(),
         "BatchMode=yes".to_string(),
         "-o".to_string(),
-        "ConnectTimeout=5".to_string(),
+        format!("ConnectTimeout={}", CONNECT_TIMEOUT_SECS),
         "-o".to_string(),
         "StrictHostKeyChecking=accept-new".to_string(),
     ];

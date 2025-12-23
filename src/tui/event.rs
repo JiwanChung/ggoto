@@ -121,8 +121,8 @@ fn handle_command_input(app: &mut App, key: KeyEvent) -> HandleResult {
         }
         KeyCode::Enter => {
             if !app.command_text.is_empty() {
-                let filtered = app.filtered_servers();
-                if let Some(&idx) = filtered.get(app.selected_index) {
+                let display_order = app.display_order_servers();
+                if let Some(&idx) = display_order.get(app.selected_index) {
                     let cmd = app.command_text.clone();
                     app.stop_command_input();
                     app.command_server = Some(app.servers[idx].host.clone());
@@ -151,8 +151,8 @@ fn handle_server_list_input(app: &mut App, key: KeyEvent) -> HandleResult {
             app.select_next();
         }
         KeyCode::Enter => {
-            let filtered = app.filtered_servers();
-            if let Some(&idx) = filtered.get(app.selected_index) {
+            let display_order = app.display_order_servers();
+            if let Some(&idx) = display_order.get(app.selected_index) {
                 return HandleResult::LaunchSsh(idx);
             }
         }
@@ -194,28 +194,28 @@ fn handle_server_list_input(app: &mut App, key: KeyEvent) -> HandleResult {
         KeyCode::Char(ch) if ch.is_ascii_lowercase() && ch != 's' && ch != 'j' && ch != 'k' && ch != 'n' && ch != 'q' && ch != 'r' && ch != 'd' && ch != 'g' && ch != 'f' && ch != 'c' && ch != 't' => {
             // Shortcut keys a-z (excluding reserved keys) to jump to server
             let idx = (ch as u8 - b'a') as usize;
-            let filtered = app.filtered_servers();
-            if idx < filtered.len() {
+            let display_order = app.display_order_servers();
+            if idx < display_order.len() {
                 app.selected_index = idx;
                 // Immediately connect
-                return HandleResult::LaunchSsh(filtered[idx]);
+                return HandleResult::LaunchSsh(display_order[idx]);
             }
         }
         KeyCode::Char(c) if c.is_ascii_digit() => {
             // Shortcut keys 0-9 for servers 26-35
             let idx = 26 + (c as u8 - b'0') as usize;
-            let filtered = app.filtered_servers();
-            if idx < filtered.len() {
+            let display_order = app.display_order_servers();
+            if idx < display_order.len() {
                 app.selected_index = idx;
-                return HandleResult::LaunchSsh(filtered[idx]);
+                return HandleResult::LaunchSsh(display_order[idx]);
             }
         }
         KeyCode::Char('r') => {
             return HandleResult::RefreshAll;
         }
         KeyCode::Char('R') => {
-            let filtered = app.filtered_servers();
-            if let Some(&idx) = filtered.get(app.selected_index) {
+            let display_order = app.display_order_servers();
+            if let Some(&idx) = display_order.get(app.selected_index) {
                 return HandleResult::RefreshServer(idx);
             }
         }
@@ -229,7 +229,7 @@ fn handle_server_list_input(app: &mut App, key: KeyEvent) -> HandleResult {
             app.selected_index = 0;
         }
         KeyCode::End => {
-            let count = app.filtered_servers().len();
+            let count = app.display_order_servers().len();
             if count > 0 {
                 app.selected_index = count - 1;
             }
@@ -238,7 +238,7 @@ fn handle_server_list_input(app: &mut App, key: KeyEvent) -> HandleResult {
             app.selected_index = app.selected_index.saturating_sub(10);
         }
         KeyCode::PageDown => {
-            let count = app.filtered_servers().len();
+            let count = app.display_order_servers().len();
             app.selected_index = (app.selected_index + 10).min(count.saturating_sub(1));
         }
         _ => {}
@@ -281,8 +281,8 @@ fn handle_details_input(app: &mut App, key: KeyEvent) -> HandleResult {
             app.view_mode = ViewMode::ServerList;
         }
         KeyCode::Enter => {
-            let filtered = app.filtered_servers();
-            if let Some(&idx) = filtered.get(app.selected_index) {
+            let display_order = app.display_order_servers();
+            if let Some(&idx) = display_order.get(app.selected_index) {
                 return HandleResult::LaunchSsh(idx);
             }
         }
@@ -293,8 +293,8 @@ fn handle_details_input(app: &mut App, key: KeyEvent) -> HandleResult {
             app.select_next();
         }
         KeyCode::Char('r') | KeyCode::Char('R') => {
-            let filtered = app.filtered_servers();
-            if let Some(&idx) = filtered.get(app.selected_index) {
+            let display_order = app.display_order_servers();
+            if let Some(&idx) = display_order.get(app.selected_index) {
                 return HandleResult::RefreshServer(idx);
             }
         }
@@ -397,8 +397,8 @@ fn handle_tunnel_input(app: &mut App, key: KeyEvent) -> HandleResult {
         }
         KeyCode::Enter => {
             if !app.tunnel_input.is_empty() {
-                let filtered = app.filtered_servers();
-                if let Some(&idx) = filtered.get(app.selected_index) {
+                let display_order = app.display_order_servers();
+                if let Some(&idx) = display_order.get(app.selected_index) {
                     let spec = app.tunnel_input.clone();
                     app.stop_tunnel_input();
                     return HandleResult::OpenTunnel(idx, spec);
