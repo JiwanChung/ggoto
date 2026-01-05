@@ -61,6 +61,8 @@ pub async fn run_remote_command(server: &Server, command: &str) -> Result<String
         format!("ConnectTimeout={}", CONNECT_TIMEOUT_SECS),
         "-o".to_string(),
         "StrictHostKeyChecking=accept-new".to_string(),
+        "-o".to_string(),
+        "LogLevel=ERROR".to_string(), // Suppress warnings (e.g., post-quantum)
     ];
 
     // Add user if specified
