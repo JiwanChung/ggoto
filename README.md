@@ -203,8 +203,8 @@ ggoto includes built-in [mosh](https://mosh.org/) (mobile shell) support for mor
 └─────────────────────────────────────────────────────┘
 ```
 
-- **Install locally** — Auto-detects package manager (brew/apt/dnf/yum/pacman/apk)
-- **Install on server** — Installs mosh-server on the selected remote (requires sudo)
+- **Install locally** — Auto-detects package manager (prefers brew/conda/mamba/nix)
+- **Install on server** — Installs mosh-server on the selected remote
 - **Install on all** — Batch install on servers that don't have mosh-server
 - **Instructions** — Shows manual install commands for all platforms
 
@@ -212,7 +212,13 @@ ggoto includes built-in [mosh](https://mosh.org/) (mobile shell) support for mor
 
 - Local: `mosh` client installed
 - Remote: `mosh-server` installed, UDP ports 60000-61000 open
-- Note: Remote install requires passwordless sudo or manual installation
+
+### No Sudo? No Problem
+
+ggoto prefers user-space package managers that don't require sudo:
+- **Homebrew/Linuxbrew** — `brew install mosh`
+- **Conda/Mamba** — `conda install -c conda-forge mosh`
+- **Nix** — `nix-env -iA nixpkgs.mosh`
 
 ## 📊 Sort Orders
 
