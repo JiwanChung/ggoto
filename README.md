@@ -220,6 +220,20 @@ ggoto prefers user-space package managers that don't require sudo:
 - **Conda/Mamba** — `conda install -c conda-forge mosh`
 - **Nix** — `nix-env -iA nixpkgs.mosh`
 
+### Automatic Path Detection
+
+ggoto automatically detects mosh-server in non-standard locations (conda, user installs) and uses the `--server` flag when needed. Paths checked:
+
+- `$HOME/miniconda3/bin/mosh-server`
+- `$HOME/anaconda3/bin/mosh-server`
+- `$HOME/miniforge3/bin/mosh-server`
+- `$HOME/mambaforge/bin/mosh-server`
+- `$HOME/.local/bin/mosh-server`
+- `/opt/homebrew/bin/mosh-server`
+- `/usr/local/bin/mosh-server`
+
+This means mosh works even when installed via conda without modifying your PATH.
+
 ## 📊 Sort Orders
 
 Cycle through with `s`:
